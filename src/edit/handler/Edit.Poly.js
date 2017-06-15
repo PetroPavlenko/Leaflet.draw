@@ -383,6 +383,9 @@ L.Edit.PolyVerticesEdit = L.Handler.extend({
 	},
 
 	_createMiddleMarker: function (marker1, marker2) {
+    if (this._markers.length > this._poly.options.markerMaxCount - 1) {
+      return;
+    }
 		var latlng = this._getMiddleLatLng(marker1, marker2),
 			marker = this._createMarker(latlng),
 			onClick,

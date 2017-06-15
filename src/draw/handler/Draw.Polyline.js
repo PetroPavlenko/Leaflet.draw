@@ -13,6 +13,7 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 	options: {
 		allowIntersection: true,
 		repeatMode: false,
+    markerMaxCount: Infinity,
 		drawError: {
 			color: '#b00b00',
 			timeout: 2500
@@ -48,6 +49,10 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 		if (L.Browser.touch) {
 			this.options.icon = this.options.touchIcon;
 		}
+
+    if (options.markerMaxCount) {
+      this.options.shapeOptions.markerMaxCount = options.markerMaxCount;
+    }
 
 		// Need to set this here to ensure the correct message is used.
 		this.options.drawError.message = L.drawLocal.draw.handlers.polyline.error;
@@ -301,6 +306,10 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 				this._finishShape();
 			} else if (Math.abs(dragCheckDistance) < 9 * (window.devicePixelRatio || 1)) {
 				this.addVertex(e.latlng);
+        var markerCount = this._markers && this._markers.length || 0;
+        if(this._markers.length > this.options.markerMaxCount - 1){
+          this._finishShape();
+        }
 			}
 			this._enableNewMarkers(); // after a short pause, enable new markers
 		}
