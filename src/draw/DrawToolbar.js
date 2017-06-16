@@ -65,30 +65,41 @@ L.DrawToolbar = L.Toolbar.extend({
 
 	// @method getActions(): object
 	// Get action information
-	getActions: function (handler) {
-		return [
-			{
-				enabled: handler.completeShape,
-				title: L.drawLocal.draw.toolbar.finish.title,
-				text: L.drawLocal.draw.toolbar.finish.text,
-				callback: handler.completeShape,
-				context: handler
-			},
-			{
-				enabled: handler.deleteLastVertex,
-				title: L.drawLocal.draw.toolbar.undo.title,
-				text: L.drawLocal.draw.toolbar.undo.text,
-				callback: handler.deleteLastVertex,
-				context: handler
-			},
-			{
-				title: L.drawLocal.draw.toolbar.actions.title,
-				text: L.drawLocal.draw.toolbar.actions.text,
-				callback: this.disable,
-				context: this
-			}
-		];
-	},
+  getActions: function(handler) {
+    var actions = {
+      finish: {
+        enabled: handler.completeShape,
+        title: L.drawLocal.draw.toolbar.finish.title,
+        text: L.drawLocal.draw.toolbar.finish.text,
+        callback: handler.completeShape,
+        context: handler
+      },
+      undo: {
+        enabled: handler.deleteLastVertex,
+        title: L.drawLocal.draw.toolbar.undo.title,
+        text: L.drawLocal.draw.toolbar.undo.text,
+        callback: handler.deleteLastVertex,
+        context: handler
+      },
+      actions: {
+        title: L.drawLocal.draw.toolbar.actions.title,
+        text: L.drawLocal.draw.toolbar.actions.text,
+        callback: this.disable,
+        context: this
+      }
+    };
+    var itemOptions = this.options[handler.type];
+    if (itemOptions && itemOptions.toolbar) {
+      Object.keys(itemOptions.toolbar).forEach(function(name) {
+        if (!itemOptions.toolbar[name]) {
+          delete actions[name];
+        }
+      });
+    }
+    return Object.keys(actions).map(function(name) {
+      return actions[name]
+    });
+  },
 
 	// @method setOptions(): void
 	// Sets the options to the toolbar

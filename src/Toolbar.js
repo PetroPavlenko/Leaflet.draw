@@ -281,13 +281,15 @@ L.Toolbar = L.Class.extend({
 	_showActionsToolbar: function () {
 		var buttonIndex = this._activeMode.buttonIndex,
 			lastButtonIndex = this._lastButtonIndex,
-			toolbarPosition = this._activeMode.button.offsetTop - 1;
+			toolbarPosition = this._activeMode.button.offsetTop - 1,
+			toolbarPositionLeft = this._activeMode.button.offsetLeft;
 
 		// Recreate action buttons on every click
 		this._createActions(this._activeMode.handler);
 
 		// Correctly position the cancel button
 		this._actionsContainer.style.top = toolbarPosition + 'px';
+		this._actionsContainer.style.left = toolbarPositionLeft + 'px';
 
 		if (buttonIndex === 0) {
 			L.DomUtil.addClass(this._toolbarContainer, 'leaflet-draw-toolbar-notop');
