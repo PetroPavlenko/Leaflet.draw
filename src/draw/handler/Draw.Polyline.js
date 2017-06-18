@@ -50,9 +50,9 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 			this.options.icon = this.options.touchIcon;
 		}
 
-    if (options.markerMaxCount) {
-      this.options.shapeOptions.markerMaxCount = options.markerMaxCount;
-    }
+    this.options.shapeOptions.markerMaxCount = options.markerMaxCount;
+		this.options.shapeOptions.vertical = options.vertical;
+		this.options.shapeOptions.horizontal = options.horizontal;
 
 		// Need to set this here to ensure the correct message is used.
 		this.options.drawError.message = L.drawLocal.draw.handlers.polyline.error;
@@ -297,24 +297,43 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 		this._clickHandled = null;
 	},
 
-	_endPoint: function (clientX, clientY, e) {
-		if (this._mouseDownOrigin) {
-			var dragCheckDistance = L.point(clientX, clientY)
-				.distanceTo(this._mouseDownOrigin);
-			var lastPtDistance = this._calculateFinishDistance(e.latlng);
-			if (lastPtDistance < 10 && L.Browser.touch) {
-				this._finishShape();
-			} else if (Math.abs(dragCheckDistance) < 9 * (window.devicePixelRatio || 1)) {
-				this.addVertex(e.latlng);
-        var markerCount = this._markers && this._markers.length || 0;
-        if(this._markers.length > this.options.markerMaxCount - 1){
+	_endPoint: function(clientX, clientY, e) {
+    if (this._mouseDownOrigin) {
+      var _markers = this._markers;
+      var clientLatLng = e.latlng;
+      if (_markers.length) {
+        var lastMarker = _markers[_markers.length - 1];
+        var lastMarkerPosition = lastMarker._icon._leaflet_pos;
+        if (this.options.vertical) {
+          clientX = lastMarkerPosition.x;
+          clientLatLng.lat = lastMarker._latlng.lat;
+        }
+        if (this.options.horizontal) {
+          clientY = lastMarkerPosition.y;
+          clientLatLng.lng = lastMarker._latlng.lng;
+        }
+      }
+      var dragCheckDistance = L.point(clientX, clientY).distanceTo(this._mouseDownOrigin);
+      var lastPtDistance = this._calculateFinishDistance(clientLatLng);
+      if (lastPtDistance < 10 && L.Browser.touch) {
+        this._finishShape();
+      }
+      else if (
+        this.options.vertical ||
+        this.options.horizontal ||
+        Math.abs(dragCheckDistance) < 9 * (window.devicePixelRatio || 1)
+      ) {
+	      console.log(clientLatLng);
+	      console.log(e.latlng);
+        this.addVertex(clientLatLng);
+        if (_markers.length > this.options.markerMaxCount - 1) {
           this._finishShape();
         }
-			}
-			this._enableNewMarkers(); // after a short pause, enable new markers
-		}
-		this._mouseDownOrigin = null;
-	},
+      }
+      this._enableNewMarkers(); // after a short pause, enable new markers
+    }
+    this._mouseDownOrigin = null;
+  },
 
 	// ontouch prevented by clickHandled flag because some browsers fire both click/touch events,
 	// causing unwanted behavior

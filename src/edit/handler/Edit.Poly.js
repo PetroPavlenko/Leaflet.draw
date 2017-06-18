@@ -267,7 +267,17 @@ L.Edit.PolyVerticesEdit = L.Handler.extend({
 	_onMarkerDrag: function (e) {
 		var marker = e.target;
 		var poly = this._poly;
+		var latlng = marker._latlng;
+		var options = this._poly.options;
+		var origLatLng = (marker._prev || marker._next)._origLatLng;
+		if (options.vertical) {
+			latlng.lat = origLatLng.lat;
+		}
+		if (options.horizontal) {
+			latlng.lng = origLatLng.lng;
+		}
 
+		(options.vertical || options.horizontal) && marker.setLatLng(latlng);
 		L.extend(marker._origLatLng, marker._latlng);
 
 		if (marker._middleLeft) {
