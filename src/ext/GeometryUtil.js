@@ -11,6 +11,11 @@ var defaultPrecision = {
 	nm: 2
 };
 
+var checkScaleParam = function(scale, name) {
+	if (scale[name] === undefined) {
+		scale[name] = 1
+	}
+};
 
 /**
  * @class L.GeometryUtil
@@ -19,21 +24,24 @@ var defaultPrecision = {
 L.GeometryUtil = L.extend(L.GeometryUtil || {}, {
 	// Ported from the OpenLayers implementation. See https://github.com/openlayers/openlayers/blob/master/lib/OpenLayers/Geometry/LinearRing.js#L270
 
-	// @method geodesicArea(): number
-	geodesicArea: function (latLngs) {
-		var pointsCount = latLngs.length,
+  // @method geodesicArea(): number
+	geodesicArea: function(latlngs, scale) {
+
+		var pointsCount = latlngs.length,
 			area = 0.0,
-			d2r = Math.PI / 180,
 			p1, p2;
 
+		scale = scale || {};
+		checkScaleParam(scale, 'lng');
+		checkScaleParam(scale, 'lat');
+		var scaleKoef = scale.lng * scale.lng;
 		if (pointsCount > 2) {
-			for (var i = 0; i < pointsCount; i++) {
-				p1 = latLngs[i];
-				p2 = latLngs[(i + 1) % pointsCount];
-				area += ((p2.lng - p1.lng) * d2r) *
-						(2 + Math.sin(p1.lat * d2r) + Math.sin(p2.lat * d2r));
+			for(var i = 0; i < pointsCount; i++) {
+				p1 = latlngs[i];
+				p2 = latlngs[(i + 1) % pointsCount];
+				area += p1.lng * p2.lat * scaleKoef - p2.lng * p1.lat * scaleKoef;
 			}
-			area = area * 6378137.0 * 6378137.0 / 2.0;
+			area /= 2;
 		}
 
 		return Math.abs(area);
@@ -65,7 +73,7 @@ L.GeometryUtil = L.extend(L.GeometryUtil || {}, {
 	// The value will be rounded as defined by the precision option object.
 	readableArea: function (area, isMetric, precision) {
 		var areaStr,
-			units, 
+			units,
 			precision = L.Util.extend({}, defaultPrecision, precision);
 
 		if (isMetric) {

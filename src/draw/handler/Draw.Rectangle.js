@@ -55,9 +55,16 @@ L.Draw.Rectangle = L.Draw.SimpleShape.extend({
 
 		if (shape) {
 			latLngs = this._shape._defaultShape ? this._shape._defaultShape() : this._shape.getLatLngs();
-			area = L.GeometryUtil.geodesicArea(latLngs);
-			subtext = showArea ? L.GeometryUtil.readableArea(area, this.options.metric) : ''
-		}
+			area = L.GeometryUtil.geodesicArea(latLngs, this.options.scale);
+			subtext = '';
+      if (showArea) {
+        if (this.options.customFormatter) {
+          subtext = this.options.customFormatter(area);
+        } else {
+          subtext = L.GeometryUtil.readableArea(area, this.options.metric);
+        }
+      }
+    }
 
 		return {
 			text: tooltipText.text,

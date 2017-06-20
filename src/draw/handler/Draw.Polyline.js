@@ -521,7 +521,7 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 			this._measurementRunningTotal = 0;
 		} else {
 			previousMarkerIndex = markersLength - (added ? 2 : 1);
-			distance = latlng.distanceTo(this._markers[previousMarkerIndex].getLatLng());
+			distance = latlng.distanceTo(this._markers[previousMarkerIndex].getLatLng(), this.options.scale);
 
 			this._measurementRunningTotal += distance * (added ? 1 : -1);
 		}
@@ -532,13 +532,15 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 			previousLatLng = this._markers[this._markers.length - 1].getLatLng(),
 			distance;
 
-		// calculate the distance from the last fixed point to the mouse position
-		distance = previousLatLng && currentLatLng && currentLatLng.distanceTo ? this._measurementRunningTotal + currentLatLng.distanceTo(previousLatLng) : this._measurementRunningTotal || 0 ;
+    // calculate the distance from the last fixed point to the mouse position
+    distance = previousLatLng && currentLatLng && currentLatLng.distanceTo ? this._measurementRunningTotal + currentLatLng.distanceTo(previousLatLng, this.options.scale) : this._measurementRunningTotal || 0;
+    if (this.options.customFormatter) {
+      return this.options.customFormatter(distance);
+    }
+    return L.GeometryUtil.readableDistance(distance, this.options.metric, this.options.feet, this.options.nautic, this.options.precision);
+  },
 
-		return L.GeometryUtil.readableDistance(distance, this.options.metric, this.options.feet, this.options.nautic, this.options.precision);
-	},
-
-	_showErrorTooltip: function () {
+  _showErrorTooltip: function () {
 		this._errorShown = true;
 
 		// Update tooltip

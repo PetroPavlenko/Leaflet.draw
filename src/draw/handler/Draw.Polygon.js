@@ -92,7 +92,11 @@ L.Draw.Polygon = L.Draw.Polyline.extend({
 		}
 
 		if (area) {
-			measurementString += '<br>' + L.GeometryUtil.readableArea(area, this.options.metric, this.options.precision);
+			if (this.options.customFormatter) {
+				measurementString += '<br>' + this.options.customFormatter(area);
+			} else {
+				measurementString += '<br>' + L.GeometryUtil.readableArea(area, this.options.metric, this.options.precision);
+			}
 		}
 
 		return measurementString;
@@ -109,7 +113,7 @@ L.Draw.Polygon = L.Draw.Polyline.extend({
 		if (!this.options.allowIntersection && this.options.showArea) {
 			latLngs = this._poly.getLatLngs();
 
-			this._area = L.GeometryUtil.geodesicArea(latLngs);
+			this._area = L.GeometryUtil.geodesicArea(latLngs, this.options.scale);
 		}
 
 		L.Draw.Polyline.prototype._vertexChanged.call(this, latlng, added);

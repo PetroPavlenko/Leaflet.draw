@@ -1,5 +1,5 @@
 /*
- Leaflet.draw 0.4.9+10e881d, a plugin that adds drawing and editing tools to Leaflet powered maps.
+ Leaflet.draw 0.4.9+10cd3c7, a plugin that adds drawing and editing tools to Leaflet powered maps.
  (c) 2012-2017, Jacob Toye, Jon West, Smartrak, Leaflet
 
  https://github.com/Leaflet/Leaflet.draw
@@ -8,7 +8,7 @@
 (function (window, document, undefined) {/**
  * Leaflet.draw assumes that you have already included the Leaflet library.
  */
-L.drawVersion = "0.4.9+10e881d";
+L.drawVersion = "0.4.9+10cd3c7";
 /**
  * @class L.Draw
  * @aka Draw
@@ -972,7 +972,7 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 			this._measurementRunningTotal = 0;
 		} else {
 			previousMarkerIndex = markersLength - (added ? 2 : 1);
-			distance = latlng.distanceTo(this._markers[previousMarkerIndex].getLatLng());
+			distance = latlng.distanceTo(this._markers[previousMarkerIndex].getLatLng(), this.options.scale);
 
 			this._measurementRunningTotal += distance * (added ? 1 : -1);
 		}
@@ -983,13 +983,15 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 			previousLatLng = this._markers[this._markers.length - 1].getLatLng(),
 			distance;
 
-		// calculate the distance from the last fixed point to the mouse position
-		distance = previousLatLng && currentLatLng && currentLatLng.distanceTo ? this._measurementRunningTotal + currentLatLng.distanceTo(previousLatLng) : this._measurementRunningTotal || 0 ;
+    // calculate the distance from the last fixed point to the mouse position
+    distance = previousLatLng && currentLatLng && currentLatLng.distanceTo ? this._measurementRunningTotal + currentLatLng.distanceTo(previousLatLng, this.options.scale) : this._measurementRunningTotal || 0;
+    if (this.options.customFormatter) {
+      return this.options.customFormatter(distance);
+    }
+    return L.GeometryUtil.readableDistance(distance, this.options.metric, this.options.feet, this.options.nautic, this.options.precision);
+  },
 
-		return L.GeometryUtil.readableDistance(distance, this.options.metric, this.options.feet, this.options.nautic, this.options.precision);
-	},
-
-	_showErrorTooltip: function () {
+  _showErrorTooltip: function () {
 		this._errorShown = true;
 
 		// Update tooltip
@@ -1149,7 +1151,11 @@ L.Draw.Polygon = L.Draw.Polyline.extend({
 		}
 
 		if (area) {
-			measurementString += '<br>' + L.GeometryUtil.readableArea(area, this.options.metric, this.options.precision);
+			if (this.options.customFormatter) {
+				measurementString += '<br>' + this.options.customFormatter(area);
+			} else {
+				measurementString += '<br>' + L.GeometryUtil.readableArea(area, this.options.metric, this.options.precision);
+			}
 		}
 
 		return measurementString;
@@ -1166,7 +1172,7 @@ L.Draw.Polygon = L.Draw.Polyline.extend({
 		if (!this.options.allowIntersection && this.options.showArea) {
 			latLngs = this._poly.getLatLngs();
 
-			this._area = L.GeometryUtil.geodesicArea(latLngs);
+			this._area = L.GeometryUtil.geodesicArea(latLngs, this.options.scale);
 		}
 
 		L.Draw.Polyline.prototype._vertexChanged.call(this, latlng, added);
@@ -1355,9 +1361,16 @@ L.Draw.Rectangle = L.Draw.SimpleShape.extend({
 
 		if (shape) {
 			latLngs = this._shape._defaultShape ? this._shape._defaultShape() : this._shape.getLatLngs();
-			area = L.GeometryUtil.geodesicArea(latLngs);
-			subtext = showArea ? L.GeometryUtil.readableArea(area, this.options.metric) : ''
-		}
+			area = L.GeometryUtil.geodesicArea(latLngs, this.options.scale);
+			subtext = '';
+      if (showArea) {
+        if (this.options.customFormatter) {
+          subtext = this.options.customFormatter(area);
+        } else {
+          subtext = L.GeometryUtil.readableArea(area, this.options.metric);
+        }
+      }
+    }
 
 		return {
 			text: tooltipText.text,
@@ -2922,6 +2935,11 @@ var defaultPrecision = {
 	nm: 2
 };
 
+var checkScaleParam = function(scale, name) {
+	if (scale[name] === undefined) {
+		scale[name] = 1
+	}
+};
 
 /**
  * @class L.GeometryUtil
@@ -2930,21 +2948,24 @@ var defaultPrecision = {
 L.GeometryUtil = L.extend(L.GeometryUtil || {}, {
 	// Ported from the OpenLayers implementation. See https://github.com/openlayers/openlayers/blob/master/lib/OpenLayers/Geometry/LinearRing.js#L270
 
-	// @method geodesicArea(): number
-	geodesicArea: function (latLngs) {
-		var pointsCount = latLngs.length,
+  // @method geodesicArea(): number
+	geodesicArea: function(latlngs, scale) {
+
+		var pointsCount = latlngs.length,
 			area = 0.0,
-			d2r = Math.PI / 180,
 			p1, p2;
 
+		scale = scale || {};
+		checkScaleParam(scale, 'lng');
+		checkScaleParam(scale, 'lat');
+		var scaleKoef = scale.lng * scale.lng;
 		if (pointsCount > 2) {
-			for (var i = 0; i < pointsCount; i++) {
-				p1 = latLngs[i];
-				p2 = latLngs[(i + 1) % pointsCount];
-				area += ((p2.lng - p1.lng) * d2r) *
-						(2 + Math.sin(p1.lat * d2r) + Math.sin(p2.lat * d2r));
+			for(var i = 0; i < pointsCount; i++) {
+				p1 = latlngs[i];
+				p2 = latlngs[(i + 1) % pointsCount];
+				area += p1.lng * p2.lat * scaleKoef - p2.lng * p1.lat * scaleKoef;
 			}
-			area = area * 6378137.0 * 6378137.0 / 2.0;
+			area /= 2;
 		}
 
 		return Math.abs(area);
@@ -2976,7 +2997,7 @@ L.GeometryUtil = L.extend(L.GeometryUtil || {}, {
 	// The value will be rounded as defined by the precision option object.
 	readableArea: function (area, isMetric, precision) {
 		var areaStr,
-			units, 
+			units,
 			precision = L.Util.extend({}, defaultPrecision, precision);
 
 		if (isMetric) {
