@@ -1,5 +1,5 @@
 /*
- Leaflet.draw 0.4.9+3587aec, a plugin that adds drawing and editing tools to Leaflet powered maps.
+ Leaflet.draw 0.4.9+10e881d, a plugin that adds drawing and editing tools to Leaflet powered maps.
  (c) 2012-2017, Jacob Toye, Jon West, Smartrak, Leaflet
 
  https://github.com/Leaflet/Leaflet.draw
@@ -8,7 +8,7 @@
 (function (window, document, undefined) {/**
  * Leaflet.draw assumes that you have already included the Leaflet library.
  */
-L.drawVersion = "0.4.9+3587aec";
+L.drawVersion = "0.4.9+10e881d";
 /**
  * @class L.Draw
  * @aka Draw
@@ -749,33 +749,31 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 	},
 
 	_endPoint: function(clientX, clientY, e) {
-    if (this._mouseDownOrigin) {
-      var _markers = this._markers;
-      var clientLatLng = e.latlng;
-      if (_markers.length) {
-        var lastMarker = _markers[_markers.length - 1];
-        var lastMarkerPosition = lastMarker._icon._leaflet_pos;
-        if (this.options.vertical) {
-          clientX = lastMarkerPosition.x;
-          clientLatLng.lat = lastMarker._latlng.lat;
-        }
-        if (this.options.horizontal) {
-          clientY = lastMarkerPosition.y;
-          clientLatLng.lng = lastMarker._latlng.lng;
-        }
-      }
-      var dragCheckDistance = L.point(clientX, clientY).distanceTo(this._mouseDownOrigin);
-      var lastPtDistance = this._calculateFinishDistance(clientLatLng);
-      if (lastPtDistance < 10 && L.Browser.touch) {
-        this._finishShape();
-      }
+		if (this._mouseDownOrigin) {
+			var _markers = this._markers;
+			var clientLatLng = e.latlng;
+			if (_markers.length) {
+				var lastMarker = _markers[_markers.length - 1];
+				var lastMarkerPosition = lastMarker._icon._leaflet_pos;
+				if (this.options.horizontal) {
+					clientX = lastMarkerPosition.x;
+					clientLatLng.lat = lastMarker._latlng.lat;
+				}
+				if (this.options.vertical) {
+					clientY = lastMarkerPosition.y;
+					clientLatLng.lng = lastMarker._latlng.lng;
+				}
+			}
+			var dragCheckDistance = L.point(clientX, clientY).distanceTo(this._mouseDownOrigin);
+			var lastPtDistance = this._calculateFinishDistance(clientLatLng);
+			if (lastPtDistance < 10 && L.Browser.touch) {
+				this._finishShape();
+			}
       else if (
         this.options.vertical ||
         this.options.horizontal ||
         Math.abs(dragCheckDistance) < 9 * (window.devicePixelRatio || 1)
       ) {
-	      console.log(clientLatLng);
-	      console.log(e.latlng);
         this.addVertex(clientLatLng);
         if (_markers.length > this.options.markerMaxCount - 1) {
           this._finishShape();
@@ -1928,17 +1926,24 @@ L.Edit.PolyVerticesEdit = L.Handler.extend({
 	_onMarkerDrag: function (e) {
 		var marker = e.target;
 		var poly = this._poly;
-		var latlng = marker._latlng;
 		var options = this._poly.options;
-		var origLatLng = (marker._prev || marker._next)._origLatLng;
-		if (options.vertical) {
-			latlng.lat = origLatLng.lat;
-		}
-		if (options.horizontal) {
-			latlng.lng = origLatLng.lng;
+		var origLatLng = marker._latlng;
+		if (options.vertical || options.horizontal) {
+			this._markers.forEach(function(_marker) {
+				if (_marker === marker) {
+					return;
+				}
+				var latlng = _marker._origLatLng;
+				if (options.horizontal) {
+					latlng.lat = origLatLng.lat;
+				}
+				if (options.vertical) {
+					latlng.lng = origLatLng.lng;
+				}
+				_marker.setLatLng(latlng);
+			});
 		}
 
-		(options.vertical || options.horizontal) && marker.setLatLng(latlng);
 		L.extend(marker._origLatLng, marker._latlng);
 
 		if (marker._middleLeft) {

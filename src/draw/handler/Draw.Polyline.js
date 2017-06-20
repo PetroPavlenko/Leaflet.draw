@@ -298,33 +298,31 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 	},
 
 	_endPoint: function(clientX, clientY, e) {
-    if (this._mouseDownOrigin) {
-      var _markers = this._markers;
-      var clientLatLng = e.latlng;
-      if (_markers.length) {
-        var lastMarker = _markers[_markers.length - 1];
-        var lastMarkerPosition = lastMarker._icon._leaflet_pos;
-        if (this.options.vertical) {
-          clientX = lastMarkerPosition.x;
-          clientLatLng.lat = lastMarker._latlng.lat;
-        }
-        if (this.options.horizontal) {
-          clientY = lastMarkerPosition.y;
-          clientLatLng.lng = lastMarker._latlng.lng;
-        }
-      }
-      var dragCheckDistance = L.point(clientX, clientY).distanceTo(this._mouseDownOrigin);
-      var lastPtDistance = this._calculateFinishDistance(clientLatLng);
-      if (lastPtDistance < 10 && L.Browser.touch) {
-        this._finishShape();
-      }
+		if (this._mouseDownOrigin) {
+			var _markers = this._markers;
+			var clientLatLng = e.latlng;
+			if (_markers.length) {
+				var lastMarker = _markers[_markers.length - 1];
+				var lastMarkerPosition = lastMarker._icon._leaflet_pos;
+				if (this.options.horizontal) {
+					clientX = lastMarkerPosition.x;
+					clientLatLng.lat = lastMarker._latlng.lat;
+				}
+				if (this.options.vertical) {
+					clientY = lastMarkerPosition.y;
+					clientLatLng.lng = lastMarker._latlng.lng;
+				}
+			}
+			var dragCheckDistance = L.point(clientX, clientY).distanceTo(this._mouseDownOrigin);
+			var lastPtDistance = this._calculateFinishDistance(clientLatLng);
+			if (lastPtDistance < 10 && L.Browser.touch) {
+				this._finishShape();
+			}
       else if (
         this.options.vertical ||
         this.options.horizontal ||
         Math.abs(dragCheckDistance) < 9 * (window.devicePixelRatio || 1)
       ) {
-	      console.log(clientLatLng);
-	      console.log(e.latlng);
         this.addVertex(clientLatLng);
         if (_markers.length > this.options.markerMaxCount - 1) {
           this._finishShape();
