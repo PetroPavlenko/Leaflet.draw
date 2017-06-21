@@ -34,7 +34,7 @@ L.GeometryUtil = L.extend(L.GeometryUtil || {}, {
 		scale = scale || {};
 		checkScaleParam(scale, 'lng');
 		checkScaleParam(scale, 'lat');
-		var scaleKoef = scale.lng * scale.lng;
+		var scaleKoef = scale.lng * scale.lat;
 		if (pointsCount > 2) {
 			for(var i = 0; i < pointsCount; i++) {
 				p1 = latlngs[i];
