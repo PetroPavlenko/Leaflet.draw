@@ -86,16 +86,15 @@ L.Toolbar = L.Class.extend({
 		this._toolbarContainer = L.DomUtil.create('div', 'leaflet-draw-toolbar leaflet-bar');
 		this._map = map;
 
-		for (i = 0; i < modeHandlers.length; i++) {
-			if (modeHandlers[i].enabled) {
-				this._initModeHandler(
-					modeHandlers[i].handler,
-					this._toolbarContainer,
-					buttonIndex++,
-					buttonClassPrefix,
-					modeHandlers[i].title
-				);
-			}
+		for(i = 0; i < modeHandlers.length; i++) {
+			this._initModeHandler(
+				modeHandlers[i].handler,
+				this._toolbarContainer,
+				buttonIndex++,
+				buttonClassPrefix,
+				modeHandlers[i].title,
+				modeHandlers[i].enabled
+			);
 		}
 
 		// if no buttons were added, do not add the toolbar
@@ -152,28 +151,33 @@ L.Toolbar = L.Class.extend({
 		this._actionsContainer = null;
 	},
 
-	_initModeHandler: function (handler, container, buttonIndex, classNamePredix, buttonTitle) {
-		var type = handler.type;
+  _initModeHandler: function(handler, container, buttonIndex, classNamePredix, buttonTitle, enabled) {
+    var type = handler.type;
 
-		this._modes[type] = {};
+    this._modes[type] = {};
 
-		this._modes[type].handler = handler;
+    this._modes[type].handler = handler;
 
-		this._modes[type].button = this._createButton({
-			type: type,
-			title: buttonTitle,
-			className: classNamePredix + '-' + type,
-			container: container,
-			callback: this._modes[type].handler.enable,
-			context: this._modes[type].handler
-		});
+	  var options = {
+		  type: type,
+		  title: buttonTitle,
+		  className: classNamePredix + '-' + type + (!enabled ? ' leaflet-disabled' : ''),
+		  container: container,
+		  context: this._modes[type].handler
+	  };
 
-		this._modes[type].buttonIndex = buttonIndex;
+	  if (enabled) {
+		  options.callback = this._modes[type].handler.enable;
+	  } else {
+		  options.callback = function() {};
+	  }
 
-		this._modes[type].handler
-			.on('enabled', this._handlerActivated, this)
-			.on('disabled', this._handlerDeactivated, this);
-	},
+	  this._modes[type].button = this._createButton(options);
+
+    this._modes[type].handler
+      .on('enabled', this._handlerActivated, this)
+      .on('disabled', this._handlerDeactivated, this);
+  },
 
 	_createButton: function (options) {
 

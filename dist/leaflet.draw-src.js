@@ -1,5 +1,5 @@
 /*
- Leaflet.draw 0.4.9+d712b2d, a plugin that adds drawing and editing tools to Leaflet powered maps.
+ Leaflet.draw 0.4.9+836a553, a plugin that adds drawing and editing tools to Leaflet powered maps.
  (c) 2012-2017, Jacob Toye, Jon West, Smartrak, Leaflet
 
  https://github.com/Leaflet/Leaflet.draw
@@ -8,7 +8,7 @@
 (function (window, document, undefined) {/**
  * Leaflet.draw assumes that you have already included the Leaflet library.
  */
-L.drawVersion = "0.4.9+d712b2d";
+L.drawVersion = "0.4.9+836a553";
 /**
  * @class L.Draw
  * @aka Draw
@@ -3469,16 +3469,15 @@ L.Toolbar = L.Class.extend({
 		this._toolbarContainer = L.DomUtil.create('div', 'leaflet-draw-toolbar leaflet-bar');
 		this._map = map;
 
-		for (i = 0; i < modeHandlers.length; i++) {
-			if (modeHandlers[i].enabled) {
-				this._initModeHandler(
-					modeHandlers[i].handler,
-					this._toolbarContainer,
-					buttonIndex++,
-					buttonClassPrefix,
-					modeHandlers[i].title
-				);
-			}
+		for(i = 0; i < modeHandlers.length; i++) {
+			this._initModeHandler(
+				modeHandlers[i].handler,
+				this._toolbarContainer,
+				buttonIndex++,
+				buttonClassPrefix,
+				modeHandlers[i].title,
+				modeHandlers[i].enabled
+			);
 		}
 
 		// if no buttons were added, do not add the toolbar
@@ -3535,28 +3534,33 @@ L.Toolbar = L.Class.extend({
 		this._actionsContainer = null;
 	},
 
-	_initModeHandler: function (handler, container, buttonIndex, classNamePredix, buttonTitle) {
-		var type = handler.type;
+  _initModeHandler: function(handler, container, buttonIndex, classNamePredix, buttonTitle, enabled) {
+    var type = handler.type;
 
-		this._modes[type] = {};
+    this._modes[type] = {};
 
-		this._modes[type].handler = handler;
+    this._modes[type].handler = handler;
 
-		this._modes[type].button = this._createButton({
-			type: type,
-			title: buttonTitle,
-			className: classNamePredix + '-' + type,
-			container: container,
-			callback: this._modes[type].handler.enable,
-			context: this._modes[type].handler
-		});
+	  var options = {
+		  type: type,
+		  title: buttonTitle,
+		  className: classNamePredix + '-' + type + (!enabled ? ' leaflet-disabled' : ''),
+		  container: container,
+		  context: this._modes[type].handler
+	  };
 
-		this._modes[type].buttonIndex = buttonIndex;
+	  if (enabled) {
+		  options.callback = this._modes[type].handler.enable;
+	  } else {
+		  options.callback = function() {};
+	  }
 
-		this._modes[type].handler
-			.on('enabled', this._handlerActivated, this)
-			.on('disabled', this._handlerDeactivated, this);
-	},
+	  this._modes[type].button = this._createButton(options);
+
+    this._modes[type].handler
+      .on('enabled', this._handlerActivated, this)
+      .on('disabled', this._handlerDeactivated, this);
+  },
 
 	_createButton: function (options) {
 
