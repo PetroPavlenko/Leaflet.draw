@@ -1,5 +1,5 @@
 /*
- Leaflet.draw 0.4.9+836a553, a plugin that adds drawing and editing tools to Leaflet powered maps.
+ Leaflet.draw 0.4.9+0ad0f61, a plugin that adds drawing and editing tools to Leaflet powered maps.
  (c) 2012-2017, Jacob Toye, Jon West, Smartrak, Leaflet
 
  https://github.com/Leaflet/Leaflet.draw
@@ -8,7 +8,7 @@
 (function (window, document, undefined) {/**
  * Leaflet.draw assumes that you have already included the Leaflet library.
  */
-L.drawVersion = "0.4.9+836a553";
+L.drawVersion = "0.4.9+0ad0f61";
 /**
  * @class L.Draw
  * @aka Draw
@@ -764,17 +764,14 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 					clientY = lastMarkerPosition.y;
 					clientLatLng.lng = lastMarker._latlng.lng;
 				}
-			}
-			var dragCheckDistance = L.point(clientX, clientY).distanceTo(this._mouseDownOrigin);
-			var lastPtDistance = this._calculateFinishDistance(clientLatLng);
-			if (lastPtDistance < 10 && L.Browser.touch) {
-				this._finishShape();
-			}
-      else if (
-        this.options.vertical ||
-        this.options.horizontal ||
-        Math.abs(dragCheckDistance) < 9 * (window.devicePixelRatio || 1)
-      ) {
+      }
+      var dragCheckDistance = L.point(clientX, clientY).distanceTo(this._mouseDownOrigin);
+      var lastPtDistance = this._calculateFinishDistance(clientLatLng);
+      if (!this.options.notCalculateFinishDistance && lastPtDistance < 10 && L.Browser.touch) {
+        this._finishShape();
+      }
+      else if (this.options.horizontal || this.options.vertical ||
+        Math.abs(dragCheckDistance) < 9 * (window.devicePixelRatio || 1)) {
         this.addVertex(clientLatLng);
         if (_markers.length > this.options.markerMaxCount - 1) {
           this._finishShape();

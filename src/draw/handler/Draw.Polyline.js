@@ -313,17 +313,14 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 					clientY = lastMarkerPosition.y;
 					clientLatLng.lng = lastMarker._latlng.lng;
 				}
-			}
-			var dragCheckDistance = L.point(clientX, clientY).distanceTo(this._mouseDownOrigin);
-			var lastPtDistance = this._calculateFinishDistance(clientLatLng);
-			if (lastPtDistance < 10 && L.Browser.touch) {
-				this._finishShape();
-			}
-      else if (
-        this.options.vertical ||
-        this.options.horizontal ||
-        Math.abs(dragCheckDistance) < 9 * (window.devicePixelRatio || 1)
-      ) {
+      }
+      var dragCheckDistance = L.point(clientX, clientY).distanceTo(this._mouseDownOrigin);
+      var lastPtDistance = this._calculateFinishDistance(clientLatLng);
+      if (!this.options.notCalculateFinishDistance && lastPtDistance < 10 && L.Browser.touch) {
+        this._finishShape();
+      }
+      else if (this.options.horizontal || this.options.vertical ||
+        Math.abs(dragCheckDistance) < 9 * (window.devicePixelRatio || 1)) {
         this.addVertex(clientLatLng);
         if (_markers.length > this.options.markerMaxCount - 1) {
           this._finishShape();
