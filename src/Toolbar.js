@@ -86,16 +86,26 @@ L.Toolbar = L.Class.extend({
 		this._toolbarContainer = L.DomUtil.create('div', 'leaflet-draw-toolbar leaflet-bar');
 		this._map = map;
 
-		for(i = 0; i < modeHandlers.length; i++) {
-			this._initModeHandler(
-				modeHandlers[i].handler,
-				this._toolbarContainer,
-				buttonIndex++,
-				buttonClassPrefix,
-				modeHandlers[i].title,
-				modeHandlers[i].enabled
-			);
-		}
+    for(i = 0; i < modeHandlers.length; i++) {
+      if (modeHandlers[i].addCustomHandler) {
+        modeHandlers[i].addCustomHandler(
+          this._toolbarContainer,
+          buttonIndex++,
+          buttonClassPrefix,
+          modeHandlers[i].enabled
+        );
+      }
+      else {
+        this._initModeHandler(
+          modeHandlers[i].handler,
+          this._toolbarContainer,
+          buttonIndex++,
+          buttonClassPrefix,
+          modeHandlers[i].title,
+          modeHandlers[i].enabled
+        );
+      }
+    }
 
 		// if no buttons were added, do not add the toolbar
 		if (!buttonIndex) {

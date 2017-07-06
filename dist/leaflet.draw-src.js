@@ -1,5 +1,5 @@
 /*
- Leaflet.draw 0.4.9+0ad0f61, a plugin that adds drawing and editing tools to Leaflet powered maps.
+ Leaflet.draw 0.4.9+0d7f25c, a plugin that adds drawing and editing tools to Leaflet powered maps.
  (c) 2012-2017, Jacob Toye, Jon West, Smartrak, Leaflet
 
  https://github.com/Leaflet/Leaflet.draw
@@ -8,7 +8,7 @@
 (function (window, document, undefined) {/**
  * Leaflet.draw assumes that you have already included the Leaflet library.
  */
-L.drawVersion = "0.4.9+0ad0f61";
+L.drawVersion = "0.4.9+0d7f25c";
 /**
  * @class L.Draw
  * @aka Draw
@@ -3466,16 +3466,26 @@ L.Toolbar = L.Class.extend({
 		this._toolbarContainer = L.DomUtil.create('div', 'leaflet-draw-toolbar leaflet-bar');
 		this._map = map;
 
-		for(i = 0; i < modeHandlers.length; i++) {
-			this._initModeHandler(
-				modeHandlers[i].handler,
-				this._toolbarContainer,
-				buttonIndex++,
-				buttonClassPrefix,
-				modeHandlers[i].title,
-				modeHandlers[i].enabled
-			);
-		}
+    for(i = 0; i < modeHandlers.length; i++) {
+      if (modeHandlers[i].addCustomHandler) {
+        modeHandlers[i].addCustomHandler(
+          this._toolbarContainer,
+          buttonIndex++,
+          buttonClassPrefix,
+          modeHandlers[i].enabled
+        );
+      }
+      else {
+        this._initModeHandler(
+          modeHandlers[i].handler,
+          this._toolbarContainer,
+          buttonIndex++,
+          buttonClassPrefix,
+          modeHandlers[i].title,
+          modeHandlers[i].enabled
+        );
+      }
+    }
 
 		// if no buttons were added, do not add the toolbar
 		if (!buttonIndex) {
