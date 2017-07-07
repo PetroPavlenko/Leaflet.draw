@@ -113,8 +113,11 @@ L.Draw.Marker = L.Draw.Feature.extend({
 		this._onClick(); // permanently places marker & ends interaction
 	},
 
-	_fireCreatedEvent: function () {
-		var marker = new L.Marker.Touch(this._marker.getLatLng(), { icon: this.options.icon });
-		L.Draw.Feature.prototype._fireCreatedEvent.call(this, marker);
-	}
+  _fireCreatedEvent: function() {
+    var marker = new L.Marker.Touch(this._marker.getLatLng(), {
+      icon: this.options.icon,
+      options: this.options.markerOptions
+    });
+    L.Draw.Feature.prototype._fireCreatedEvent.call(this, marker);
+  }
 });
