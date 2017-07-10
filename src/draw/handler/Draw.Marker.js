@@ -116,7 +116,7 @@ L.Draw.Marker = L.Draw.Feature.extend({
   _fireCreatedEvent: function() {
     var marker = new L.Marker.Touch(this._marker.getLatLng(), {
       icon: this.options.icon,
-      options: this.options.markerOptions
+      staticOptions: this.options.staticOptions
     });
     L.Draw.Feature.prototype._fireCreatedEvent.call(this, marker);
   }

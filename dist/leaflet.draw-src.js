@@ -1,5 +1,5 @@
 /*
- Leaflet.draw 0.4.9+0d7f25c, a plugin that adds drawing and editing tools to Leaflet powered maps.
+ Leaflet.draw 0.4.9+15f2b82, a plugin that adds drawing and editing tools to Leaflet powered maps.
  (c) 2012-2017, Jacob Toye, Jon West, Smartrak, Leaflet
 
  https://github.com/Leaflet/Leaflet.draw
@@ -8,7 +8,7 @@
 (function (window, document, undefined) {/**
  * Leaflet.draw assumes that you have already included the Leaflet library.
  */
-L.drawVersion = "0.4.9+0d7f25c";
+L.drawVersion = "0.4.9+15f2b82";
 /**
  * @class L.Draw
  * @aka Draw
@@ -1573,10 +1573,13 @@ L.Draw.Marker = L.Draw.Feature.extend({
 		this._onClick(); // permanently places marker & ends interaction
 	},
 
-	_fireCreatedEvent: function () {
-		var marker = new L.Marker.Touch(this._marker.getLatLng(), { icon: this.options.icon });
-		L.Draw.Feature.prototype._fireCreatedEvent.call(this, marker);
-	}
+  _fireCreatedEvent: function() {
+    var marker = new L.Marker.Touch(this._marker.getLatLng(), {
+      icon: this.options.icon,
+      staticOptions: this.options.staticOptions
+    });
+    L.Draw.Feature.prototype._fireCreatedEvent.call(this, marker);
+  }
 });
 
 
