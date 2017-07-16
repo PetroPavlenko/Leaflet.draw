@@ -60,6 +60,7 @@ L.Draw.Feature = L.Handler.extend({
 
 			this._tooltip = new L.Draw.Tooltip(this._map);
 
+			this.customHooks && this.customHooks('on');
 			L.DomEvent.on(this._container, 'keyup', this._cancelDrawing, this);
 		}
 	},
@@ -73,6 +74,7 @@ L.Draw.Feature = L.Handler.extend({
 			this._tooltip.dispose();
 			this._tooltip = null;
 
+			this.customHooks && this.customHooks('off');
 			L.DomEvent.off(this._container, 'keyup', this._cancelDrawing, this);
 		}
 	},

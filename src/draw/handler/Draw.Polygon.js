@@ -41,6 +41,17 @@ L.Draw.Polygon = L.Draw.Polyline.extend({
 		this.type = L.Draw.Polygon.TYPE;
 	},
 
+	_onPressEnter: function(e) {
+		if (e.keyCode === 13) {
+			e.stopPropagation();
+			this._finishShape();
+		}
+	},
+
+	customHooks: function(type){
+		L.DomEvent[type](this._container, 'keyup', this._onPressEnter, this);
+	},
+
 	_updateFinishHandler: function () {
 		var markerCount = this._markers.length;
 

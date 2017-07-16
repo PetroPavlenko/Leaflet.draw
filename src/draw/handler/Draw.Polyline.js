@@ -235,7 +235,7 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 	// Called to verify the shape is valid when the user tries to finish it
 	// Return false if the shape is not valid
 	_shapeIsValid: function () {
-		return true;
+		return !(this._markers && this._markers.length < 2);
 	},
 
 	_onZoomEnd: function () {

@@ -1,5 +1,5 @@
 /*
- Leaflet.draw 0.4.9+15f2b82, a plugin that adds drawing and editing tools to Leaflet powered maps.
+ Leaflet.draw 0.4.9+498194e, a plugin that adds drawing and editing tools to Leaflet powered maps.
  (c) 2012-2017, Jacob Toye, Jon West, Smartrak, Leaflet
 
  https://github.com/Leaflet/Leaflet.draw
@@ -8,7 +8,7 @@
 (function (window, document, undefined) {/**
  * Leaflet.draw assumes that you have already included the Leaflet library.
  */
-L.drawVersion = "0.4.9+15f2b82";
+L.drawVersion = "0.4.9+498194e";
 /**
  * @class L.Draw
  * @aka Draw
@@ -411,6 +411,7 @@ L.Draw.Feature = L.Handler.extend({
 
 			this._tooltip = new L.Draw.Tooltip(this._map);
 
+			this.customHooks && this.customHooks('on');
 			L.DomEvent.on(this._container, 'keyup', this._cancelDrawing, this);
 		}
 	},
@@ -424,6 +425,7 @@ L.Draw.Feature = L.Handler.extend({
 			this._tooltip.dispose();
 			this._tooltip = null;
 
+			this.customHooks && this.customHooks('off');
 			L.DomEvent.off(this._container, 'keyup', this._cancelDrawing, this);
 		}
 	},
@@ -686,7 +688,7 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 	// Called to verify the shape is valid when the user tries to finish it
 	// Return false if the shape is not valid
 	_shapeIsValid: function () {
-		return true;
+		return !(this._markers && this._markers.length < 2);
 	},
 
 	_onZoomEnd: function () {
@@ -1096,6 +1098,17 @@ L.Draw.Polygon = L.Draw.Polyline.extend({
 
 		// Save the type so super can fire, need to do this as cannot do this.TYPE :(
 		this.type = L.Draw.Polygon.TYPE;
+	},
+
+	_onPressEnter: function(e) {
+		if (e.keyCode === 13) {
+			e.stopPropagation();
+			this._finishShape();
+		}
+	},
+
+	customHooks: function(type){
+		L.DomEvent[type](this._container, 'keyup', this._onPressEnter, this);
 	},
 
 	_updateFinishHandler: function () {
